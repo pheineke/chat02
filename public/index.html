@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="login">
+        <h2>Login</h2>
+        <input id="login-username" type="text" placeholder="Username">
+        <input id="login-password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button class="toggle-button" onclick="showRegister()">Register</button>
+    </div>
+    <div class="container" id="register">
+        <h2>Register</h2>
+        <input id="reg-username" type="text" placeholder="Username">
+        <input id="reg-password" type="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <button class="toggle-button" onclick="showLogin()">Back to Login</button>
+    </div>
+    <div class="container" id="chat">
+        <div class="messages" id="messages"></div>
+        <input id="message-input" type="text" placeholder="Type a message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let userId = null;
+
+        function showRegister() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('register').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('register').style.display = 'none';
+            document.getElementById('login').style.display = 'block';
+        }
+
+        function register() {
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            }).then(response => response.text())
+              .then(data => alert(data));
+        }
+
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            }).then(response => response.text())
+              .then(data => {
+                  if (data === 'Login successful') {
+                      userId = username;
+                      document.getElementById('login').style.display = 'none';
+                      document.getElementById('register').style.display = 'none';
+                      document.getElementById('chat').style.display = 'block';
+                  } else {
+                      alert(data);
+                  }
+              });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message-input').value;
+            socket.emit('new_message', { userId, message });
+            document.getElementById('message-input').value = '';
+        }
+
+        socket.on('new_message', (data) => {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            messageElement.innerText = `${data.userId}: ${data.message}`;
+            document.getElementById('messages').appendChild(messageElement);
+        });
+
+        socket.on('load_messages', (messages) => {
+            const messagesContainer = document.getElementById('messages');
+            messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
+                messageElement.innerText = `${message.user_id}: ${message.message}`;
+                messagesContainer.appendChild(messageElement);
+            });
+        });
+    </script>
+</body>
+</html>
