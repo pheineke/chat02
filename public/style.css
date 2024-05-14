@@ -20,15 +20,42 @@ body {
 }
 
 .container {
-    flex: auto;
-    max-width: 90%;
-    max-height: 90%;
-    height: auto;
+    display: flex;
+    flex-direction: row;
+    width: 90%;
+    height: 90%;
     margin: 10px auto;
     background-color: #fff;
-    padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar {
+    width: 200px;
+    padding: 20px;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
+}
+
+.toolbar h3 {
+    margin-top: 0;
+}
+
+.toolbar .room {
+    cursor: pointer;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.toolbar .room:hover {
+    background-color: #f0f0f0;
+}
+
+.chat-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
 }
 
 h2 {
@@ -42,9 +69,6 @@ input {
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 button {
@@ -57,26 +81,20 @@ button {
     font-size: 16px;
     cursor: pointer;
     margin: 10px 0;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 button:hover {
     background: #218838;
 }
 
-#chat {
-    display: none;
-}
-
 .messages {
     border: 1px solid #ccc;
-    height: 300px;
+    height: 100%;
     overflow-y: scroll;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 4px;
+    flex-grow: 1;
 }
 
 .message {
@@ -100,9 +118,6 @@ button:hover {
     text-decoration: underline;
     font-size: 14px;
     margin-top: 10px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 /* Dark mode styles */
