@@ -7,6 +7,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    color: #333;
 }
 
 .container_login {
@@ -19,7 +20,7 @@ body {
 }
 
 .container {
-    flex:auto;
+    flex: auto;
     max-width: 90%;
     max-height: 90%;
     height: auto;
@@ -102,4 +103,46 @@ button:hover {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #121212;
+        color: #e0e0e0;
+    }
+
+    .container_login,
+    .container {
+        background: #1e1e1e;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    input {
+        background: #333;
+        border: 1px solid #555;
+        color: #e0e0e0;
+    }
+
+    button {
+        background: #28a745;
+        color: #fff;
+    }
+
+    button:hover {
+        background: #218838;
+    }
+
+    .messages {
+        border: 1px solid #555;
+        background: #1e1e1e;
+    }
+
+    .message {
+        border-bottom: 1px solid #555;
+    }
+
+    .toggle-button {
+        color: #66b0ff;
+    }
 }
