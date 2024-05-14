@@ -9,13 +9,25 @@ body {
     height: 100vh;
 }
 
-.container {
+.container_login {
     background: #fff;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     width: 300px;
     margin: 10px;
+}
+
+.container {
+    flex:auto;
+    max-width: 90%;
+    max-height: 90%;
+    height: auto;
+    margin: 10px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
