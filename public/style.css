@@ -161,3 +161,39 @@ button:hover {
         color: #66b0ff;
     }
 }
+
+.chat-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+}
+
+#settings-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.overlay-content button {
+    margin-top: 10px;
+}

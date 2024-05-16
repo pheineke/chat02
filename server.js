@@ -27,58 +27,86 @@ db.serialize(() => {
 
 app.post('/register', (req, res) => {
   const { username, password } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, 8);
-  db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword], function (err) {
-    if (err) return res.status(500).send('Error registering user');
-    res.status(200).send('User registered successfully');
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword], (err) => {
+    if (err) {
+      res.status(500).send('Error registering user');
+    } else {
+      res.send('Registration successful');
+    }
   });
 });
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
   db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
-    if (err || !user) return res.status(400).send('User not found');
-    const passwordIsValid = bcrypt.compareSync(password, user.password);
-    if (!passwordIsValid) return res.status(401).send('Invalid password');
-    res.status(200).send('Login successful');
+    if (err) {
+      res.status(500).send('Error logging in');
+    } else if (user && bcrypt.compareSync(password, user.password)) {
+      res.send('Login successful');
+    } else {
+      res.send('Invalid username or password');
+    }
   });
 });
 
 io.on('connection', (socket) => {
-  socket.on('join_room', (room) => {
-    socket.join(room);
-    db.all('SELECT * FROM messages WHERE room = ?', [room], (err, rows) => {
-      if (err) throw err;
-      socket.emit('load_messages', rows);
-    });
-  });
-
-  socket.on('new_message', (data) => {
-    db.run('INSERT INTO messages (room, user_id, message) VALUES (?, ?, ?)', [data.room, data.userId, data.message]);
-    io.to(data.room).emit('new_message', data);
-  });
-
   socket.on('create_room', (room) => {
-    db.run('INSERT INTO rooms (name) VALUES (?)', [room], function(err) {
-      if (err) throw err;
-      // Fetch all rooms and emit them to all clients
-      db.all('SELECT name FROM rooms', (err, rows) => {
-        if (err) throw err;
-        const rooms = rows.map(row => row.name);
-        io.emit('room_list', rooms);
-      });
+    db.run('INSERT INTO rooms (name) VALUES (?)', [room], (err) => {
+      if (err) {
+        console.error('Error creating room:', err);
+      } else {
+        getRooms().then((rooms) => {
+          io.emit('room_list', rooms);
+        });
+      }
     });
   });
 
   socket.on('get_rooms', () => {
-    db.all('SELECT name FROM rooms', (err, rows) => {
-      if (err) throw err;
-      const rooms = rows.map(row => row.name);
-      socket.emit('room_list', rooms);
+    getRooms().then((rooms) => {
+      io.emit('room_list', rooms);
+    });
+  });
+
+  socket.on('join_room', (room) => {
+    socket.join(room);
+    db.all('SELECT * FROM messages WHERE room = ?', [room], (err, messages) => {
+      if (!err) {
+        socket.emit('load_messages', messages);
+      }
+    });
+  });
+
+  socket.on('new_message', ({ room, userId, message }) => {
+    db.run('INSERT INTO messages (room, user_id, message) VALUES (?, ?, ?)', [room, userId, message], () => {
+      io.to(room).emit('new_message', { userId, message });
+    });
+  });
+
+  socket.on('delete_room', (room) => {
+    db.run('DELETE FROM rooms WHERE name = ?', [room], () => {
+      db.run('DELETE FROM messages WHERE room = ?', [room], () => {
+        getRooms().then((rooms) => {
+          io.emit('room_list', rooms);
+        });
+      });
     });
   });
 });
 
+function getRooms() {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT name FROM rooms', (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows.map(row => row.name));
+      }
+    });
+  });
+}
+
 server.listen(3000, () => {
-  console.log('Server is running on port 3000');
+  console.log('Server is listening on port 3000');
 });
