@@ -104,3 +104,24 @@ const socket = io();
         function loadRooms() {
             socket.emit('get_rooms');
         }
+
+        function openSettings() {
+            document.getElementById('settings-overlay').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-overlay').style.display = 'none';
+        }
+
+        function deleteChat() {
+            const confirmation = prompt('Are you sure you want to delete this chat? Type "yes" to confirm.');
+            if (confirmation === 'yes') {
+                if (currentRoom !== null) {
+                    socket.emit('delete_room', currentRoom);
+                    currentRoom = null;
+                    document.getElementById('messages').innerHTML = '';
+                    loadRooms();
+                    closeSettings();
+                }
+            }
+        }
