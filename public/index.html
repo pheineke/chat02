@@ -21,7 +21,7 @@
         <button onclick="register()">Register</button>
         <button class="toggle-button" onclick="showLogin()">Back to Login</button>
     </div>
-    <div class="container" id="chat">
+    <div class="container" id="chat" style="display:none;">
         <div class="toolbar" id="toolbar">
             <h3>Chat Rooms</h3>
             <input id="room-input" type="text" placeholder="New Room">
@@ -76,6 +76,7 @@
                       document.getElementById('login').style.display = 'none';
                       document.getElementById('register').style.display = 'none';
                       document.getElementById('chat').style.display = 'flex';
+                      loadRooms();
                   } else {
                       alert(data);
                   }
@@ -85,11 +86,7 @@
         function createRoom() {
             const room = document.getElementById('room-input').value;
             if (room.trim() !== '') {
-                const roomElement = document.createElement('div');
-                roomElement.className = 'room';
-                roomElement.innerText = room;
-                roomElement.onclick = () => joinRoom(room);
-                document.getElementById('rooms').appendChild(roomElement);
+                socket.emit('create_room', room);
                 document.getElementById('room-input').value = '';
             }
         }
@@ -130,6 +127,22 @@
                 messagesContainer.appendChild(messageElement);
             });
         });
+
+        socket.on('room_list', (rooms) => {
+            const roomsContainer = document.getElementById('rooms');
+            roomsContainer.innerHTML = ''; // Clear existing rooms
+            rooms.forEach(room => {
+                const roomElement = document.createElement('div');
+                roomElement.className = 'room';
+                roomElement.innerText = room;
+                roomElement.onclick = () => joinRoom(room);
+                roomsContainer.appendChild(roomElement);
+            });
+        });
+
+        function loadRooms() {
+            socket.emit('get_rooms');
+        }
     </script>
 </body>
 </html>

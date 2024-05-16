@@ -15,7 +15,6 @@ const db = new sqlite3.Database(':memory:');
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve the index.html file
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -23,6 +22,7 @@ app.get('/', (req, res) => {
 db.serialize(() => {
   db.run('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)');
   db.run('CREATE TABLE messages (id INTEGER PRIMARY KEY, room TEXT, user_id INTEGER, message TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)');
+  db.run('CREATE TABLE rooms (id INTEGER PRIMARY KEY, name TEXT)');
 });
 
 app.post('/register', (req, res) => {
@@ -56,6 +56,26 @@ io.on('connection', (socket) => {
   socket.on('new_message', (data) => {
     db.run('INSERT INTO messages (room, user_id, message) VALUES (?, ?, ?)', [data.room, data.userId, data.message]);
     io.to(data.room).emit('new_message', data);
+  });
+
+  socket.on('create_room', (room) => {
+    db.run('INSERT INTO rooms (name) VALUES (?)', [room], function(err) {
+      if (err) throw err;
+      // Fetch all rooms and emit them to all clients
+      db.all('SELECT name FROM rooms', (err, rows) => {
+        if (err) throw err;
+        const rooms = rows.map(row => row.name);
+        io.emit('room_list', rooms);
+      });
+    });
+  });
+
+  socket.on('get_rooms', () => {
+    db.all('SELECT name FROM rooms', (err, rows) => {
+      if (err) throw err;
+      const rooms = rows.map(row => row.name);
+      socket.emit('room_list', rooms);
+    });
   });
 });
 
