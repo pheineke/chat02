@@ -22,15 +22,24 @@
         <button class="toggle-button" onclick="showLogin()">Back to Login</button>
     </div>
     <div class="container" id="chat">
-        <div class="messages" id="messages"></div>
-        <input id="message-input" type="text" placeholder="Type a message">
-        <button onclick="sendMessage()">Send</button>
+        <div class="toolbar" id="toolbar">
+            <h3>Chat Rooms</h3>
+            <input id="room-input" type="text" placeholder="New Room">
+            <button onclick="createRoom()">Create Room</button>
+            <div id="rooms"></div>
+        </div>
+        <div class="chat-section">
+            <div class="messages" id="messages"></div>
+            <input id="message-input" type="text" placeholder="Type a message">
+            <button onclick="sendMessage()">Send</button>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
         let userId = null;
+        let currentRoom = null;
 
         function showRegister() {
             document.getElementById('login').style.display = 'none';
@@ -66,17 +75,35 @@
                       userId = username;
                       document.getElementById('login').style.display = 'none';
                       document.getElementById('register').style.display = 'none';
-                      document.getElementById('chat').style.display = 'block';
+                      document.getElementById('chat').style.display = 'flex';
                   } else {
                       alert(data);
                   }
               });
         }
 
+        function createRoom() {
+            const room = document.getElementById('room-input').value;
+            if (room.trim() !== '') {
+                const roomElement = document.createElement('div');
+                roomElement.className = 'room';
+                roomElement.innerText = room;
+                roomElement.onclick = () => joinRoom(room);
+                document.getElementById('rooms').appendChild(roomElement);
+                document.getElementById('room-input').value = '';
+            }
+        }
+
+        function joinRoom(room) {
+            currentRoom = room;
+            document.getElementById('messages').innerHTML = '';
+            socket.emit('join_room', room);
+        }
+
         function sendMessage() {
             const message = document.getElementById('message-input').value;
-            if (message.trim() !== '') {
-                socket.emit('new_message', { userId, message });
+            if (message.trim() !== '' && currentRoom !== null) {
+                socket.emit('new_message', { room: currentRoom, userId, message });
                 document.getElementById('message-input').value = '';
             }
         }

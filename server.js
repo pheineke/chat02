@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 
 db.serialize(() => {
   db.run('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)');
-  db.run('CREATE TABLE messages (id INTEGER PRIMARY KEY, user_id INTEGER, message TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)');
+  db.run('CREATE TABLE messages (id INTEGER PRIMARY KEY, room TEXT, user_id INTEGER, message TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)');
 });
 
 app.post('/register', (req, res) => {
@@ -45,14 +45,17 @@ app.post('/login', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  socket.on('new_message', (data) => {
-    db.run('INSERT INTO messages (user_id, message) VALUES (?, ?)', [data.userId, data.message]);
-    io.emit('new_message', data);
+  socket.on('join_room', (room) => {
+    socket.join(room);
+    db.all('SELECT * FROM messages WHERE room = ?', [room], (err, rows) => {
+      if (err) throw err;
+      socket.emit('load_messages', rows);
+    });
   });
 
-  db.all('SELECT * FROM messages', [], (err, rows) => {
-    if (err) throw err;
-    socket.emit('load_messages', rows);
+  socket.on('new_message', (data) => {
+    db.run('INSERT INTO messages (room, user_id, message) VALUES (?, ?, ?)', [data.room, data.userId, data.message]);
+    io.to(data.room).emit('new_message', data);
   });
 });
 
