@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const db = new sqlite3.Database(':memory:');
+const db = new sqlite3.Database('chat.db'); // Verwende eine echte Datenbankdatei statt ':memory:'
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,9 +20,9 @@ app.get('/', (req, res) => {
 });
 
 db.serialize(() => {
-  db.run('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)');
-  db.run('CREATE TABLE messages (id INTEGER PRIMARY KEY, room TEXT, user_id INTEGER, message TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)');
-  db.run('CREATE TABLE rooms (id INTEGER PRIMARY KEY, name TEXT)');
+  db.run('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)');
+  db.run('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, room TEXT, user_id TEXT, message TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)');
+  db.run('CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY, name TEXT)');
 });
 
 app.post('/register', (req, res) => {
@@ -106,6 +106,18 @@ function getRooms() {
     });
   });
 }
+
+// Exportfunktion für die Chats
+app.get('/export_chat/:room', (req, res) => {
+  const room = req.params.room;
+  db.all('SELECT * FROM messages WHERE room = ?', [room], (err, messages) => {
+    if (err) {
+      res.status(500).send('Error exporting chat');
+    } else {
+      res.json(messages);
+    }
+  });
+});
 
 server.listen(3000, () => {
   console.log('Server is listening on port 3000');
