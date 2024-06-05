@@ -79,17 +79,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('new_message', ({ room, userId, message }) => {
-    if (message.type === 'file') {
-      const { fileName, data } = message;
-      db.run('INSERT INTO messages (room, user_id, message) VALUES (?, ?, ?)', [room, userId, `[File: ${fileName}]`], () => {
-        io.to(room).emit('new_message', { userId, message: `[File: ${fileName}]` });
-      });
-      // Hier kannst du das Datenobjekt 'data' speichern, z. B. in der Datei.
-    } else {
-      db.run('INSERT INTO messages (room, user_id, message) VALUES (?, ?, ?)', [room, userId, message], () => {
-        io.to(room).emit('new_message', { userId, message });
-      });
-    }
+    db.run('INSERT INTO messages (room, user_id, message) VALUES (?, ?, ?)', [room, userId, message], () => {
+      io.to(room).emit('new_message', { userId, message });
+    });
   });
 
   socket.on('delete_room', (room) => {

@@ -28,24 +28,21 @@
             <input id="room-input" type="text" placeholder="New Room">
             <button onclick="createRoom()">Create Room</button>
             <div id="rooms"></div>
-            <!-- Export Button moved to settings -->
-            <button onclick="openSettings()">⚙️</button>
+            <!-- Export Button -->
+            <button onclick="exportChat()">Export Chat</button>
         </div>
         <div class="chat-section">
             <div class="chat-header">
-                <!-- Send Button moved to next to the input field -->
-                <input id="message-input" type="text" placeholder="Type a message">
-                <input type="file" id="file-input" onchange="uploadFile(this.files)">
-                <button onclick="sendMessage()">Send</button>
+                <button id="settings-button" onclick="openSettings()">⚙️</button>
             </div>
             <div class="messages" id="messages"></div>
+            <input id="message-input" type="text" placeholder="Type a message">
+            <button onclick="sendMessage()">Send</button>
         </div>
     </div>
     <div id="settings-overlay" class="overlay" style="display:none;">
         <div class="overlay-content">
             <h2>Chat Settings</h2>
-            <!-- Export Button inside settings -->
-            <button onclick="exportChat()">Export Chat</button>
             <button onclick="deleteChat()">Delete Chat</button>
             <button onclick="closeSettings()">Close</button>
         </div>

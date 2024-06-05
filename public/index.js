@@ -76,23 +76,6 @@ function exportChat() {
     }
 }
 
-// Datei in den Chat laden
-function uploadFile(files) {
-    const file = files[0];
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const data = event.target.result;
-        const fileName = file.name;
-        const message = {
-            type: 'file',
-            fileName: fileName,
-            data: data
-        };
-        sendMessage(message);
-    };
-    reader.readAsDataURL(file);
-}
-
 function joinRoom(room) {
     currentRoom = room;
     document.getElementById('messages').innerHTML = '';
